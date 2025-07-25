@@ -21,7 +21,7 @@ import com.google.firebase.database.FirebaseDatabase
 class MainActivity2 : AppCompatActivity() {
 
 
-    lateinit var database : DatabaseReference
+    lateinit var database: DatabaseReference
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,9 +35,8 @@ class MainActivity2 : AppCompatActivity() {
         }
 
 
-
         val btnbacksignin = findViewById<FloatingActionButton>(R.id.btnbacksignin)
-        btnbacksignin.setOnClickListener{
+        btnbacksignin.setOnClickListener {
             finish()
         }
 
@@ -46,15 +45,11 @@ class MainActivity2 : AppCompatActivity() {
         val htmlText = "Don't have an account? <font color='#009dff'><u>SignUp</u></font>"
         signup.text = Html.fromHtml(htmlText)
 
-        signup.setOnClickListener{
-            val intent = Intent(this,MainActivity::class.java)
+        signup.setOnClickListener {
+            val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
             finish()
         }
-
-
-
-
 
 
         val signin = findViewById<Button>(R.id.btnsignin)
@@ -66,17 +61,25 @@ class MainActivity2 : AppCompatActivity() {
         val password2 = findViewById<TextInputEditText>(R.id.etpassword2)
 
 
-        signin.setOnClickListener{
+        signin.setOnClickListener {
             val usernamecheck = username2.text.toString()
             val passwordcheck = password2.text.toString()
 
-            if (usernamecheck.isNotEmpty() && passwordcheck.isNotEmpty()){
+            if (usernamecheck.isNotEmpty() && passwordcheck.isNotEmpty()) {
                 readddata(usernamecheck)
-            }
-            else{
-                when{
-                    usernamecheck.isEmpty() -> Toast.makeText(this, "Email is required", Toast.LENGTH_SHORT).show()
-                    passwordcheck.isEmpty() -> Toast.makeText(this, "Password is required", Toast.LENGTH_SHORT).show()
+            } else {
+                when {
+                    usernamecheck.isEmpty() -> Toast.makeText(
+                        this,
+                        "Email is required",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    passwordcheck.isEmpty() -> Toast.makeText(
+                        this,
+                        "Password is required",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
 
@@ -91,47 +94,45 @@ class MainActivity2 : AppCompatActivity() {
         val passwordcheck = findViewById<TextInputEditText>(R.id.etpassword2).text.toString()
 
         database.child(usernamecheck).get().addOnSuccessListener {
+            database.child(usernamecheck).get().addOnSuccessListener { dataSnapshot ->
+                if (dataSnapshot.exists()) {
+                    val passwordstore = dataSnapshot.child("password").value?.toString()
+
+                    if (passwordstore == null) {
+                        Toast.makeText(this, "Error retrieving user data", Toast.LENGTH_SHORT)
+                            .show()
+                        return@addOnSuccessListener
+                    }
+                    if (passwordstore == passwordcheck) {
+                        val myusername = it.child("name").value
+                        val myemail = it.child("email").value
 
 
-            if (it.exists()) {
+                        val intent2 = Intent(this, user_profile::class.java)
+                        intent2.putExtra("name", myusername.toString())
+                        intent2.putExtra("email", myemail.toString())
 
-                val passwordstore = it.child("password").value.toString()
-
-
-                    if (passwordstore == passwordcheck){
-                    val myusername = it.child("name").value
-                    val myemail = it.child("email").value
+                        startActivity(intent2)
+                        finish()
 
 
-                    val intent2 = Intent(this, user_profile::class.java)
-                    intent2.putExtra("name", myusername.toString())
-                    intent2.putExtra("email", myemail.toString())
-
-                    startActivity(intent2)
-                    finish()
+                    } else {
+                        Toast.makeText(this, "Incorrect Password", Toast.LENGTH_SHORT).show()
+                    }
 
 
+                } else {
+                    Toast.makeText(this, "User does not exist!", Toast.LENGTH_SHORT).show()
                 }
-                else{
-                    Toast.makeText(this, "Incorrect Password", Toast.LENGTH_SHORT).show()
-                }
 
 
-
-            }
-            else{
-                Toast.makeText(this, "User does not exist!", Toast.LENGTH_SHORT).show()
+            }.addOnFailureListener {
+                Toast.makeText(this, "Failure!", Toast.LENGTH_SHORT).show()
             }
 
 
-
-        }.addOnFailureListener {
-            Toast.makeText(this, "Failure!", Toast.LENGTH_SHORT).show()
         }
 
 
-
     }
-
-
 }
